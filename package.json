@@ -1,0 +1,27 @@
+{
+  "name": "browserbase-quickstart-selenium-js",
+  "version": "0.0.1",
+  "description": "A template to use Selenium with Browserbase",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/browserbase/quickstart-selenium-js.git"
+  },
+  "private": true,
+  "author": "Paul Klein <paul@browserbase.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/browserbase/quickstart-selenium-js/issues"
+  },
+  "homepage": "https://github.com/browserbase/quickstart-selenium-js#readme",
+  "dependencies": {
+    "selenium-webdriver": "^4.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/selenium-webdriver": "^4.1.22"
+  }
+}
