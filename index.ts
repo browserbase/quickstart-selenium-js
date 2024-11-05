@@ -1,79 +1,57 @@
 import http from "http";
-import webdriver from "selenium-webdriver";
-import chrome from "selenium-webdriver/chrome";
+import { Builder } from "selenium-webdriver";
+import Browserbase from "@browserbasehq/sdk";
 
-let sessionId: string;
+const PROJECT_ID = process.env.BROWSERBASE_PROJECT_ID;
+const API_KEY = process.env.BROWSERBASE_API_KEY;
 
-async function createSession() {
-  const response = await fetch(`https://www.browserbase.com/v1/sessions`, {
-    method: "POST",
-    headers: {
-      'x-bb-api-key': `${process.env.BROWSERBASE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      projectId: process.env.BROWSERBASE_PROJECT_ID,
-    }),
-  });
-  const json = await response.json();
-  return json;
+if (!API_KEY) {
+  throw new Error("BROWSERBASE_API_KEY is not set");
 }
 
-async function retrieveDebugConnectionURL(sessionId: string) {
-  const response = await fetch(
-    `https://www.browserbase.com/v1/sessions/${sessionId}/debug`,
-    {
-      method: "GET",
-      headers: {
-        'x-bb-api-key': `${process.env.BROWSERBASE_API_KEY}`,
-      },
-    },
-  );
-  const json = await response.json();
-  return json.debuggerFullscreenUrl;
+if (!PROJECT_ID) {
+  throw new Error("BROWSERBASE_PROJECT_ID is not set");
 }
 
-(async () => {
-  const { id } = await createSession();
-  sessionId = id;
-
-  console.log("Starting remote browser...")
-
-  const customHttpAgent = new http.Agent({});
-  (customHttpAgent as any).addRequest = (req: any, options: any) => {
-    // Session ID needs to be set here
-    req.setHeader("session-id", id);
-    req.setHeader("x-bb-api-key", process.env.BROWSERBASE_API_KEY);
-    (http.Agent.prototype as any).addRequest.call(customHttpAgent, req, options);
-  };
-
-  const options = new chrome.Options();
-  // We set a debuggerAddress so the server-side WebDriver can connect to Browserbase.
-  options.debuggerAddress("localhost:9223");
-
-  // Selenium only supports HTTP
-  const driver = new webdriver.Builder()
-    .forBrowser("chrome")
-    .setChromeOptions(options)
-    .usingHttpAgent(customHttpAgent)
-    .usingServer(
-      `http://connect.browserbase.com/webdriver`
-    )
-    .build();
-
-  await driver.get("https://www.browserbase.com");
-
-  const debugUrl = await retrieveDebugConnectionURL(sessionId);
-  console.log(`Session started, live debug accessible here: ${debugUrl}.`);
-
-  console.log("Taking a screenshot!")
-  await driver.takeScreenshot()
-
-  console.log("Shutting down...")
-  await driver.quit();
-})().catch((error) => {
-  console.log(
-    `Session failed, replay is accessible here: https://www.browserbase.com/sessions/${sessionId}.`,
-  );
-  console.error(error.message);
+const bb = new Browserbase({
+  apiKey: API_KEY,
 });
+
+const session = await bb.sessions.create({
+  projectId: PROJECT_ID,
+});
+console.log(`Session created, id: ${session.id}`);
+
+console.log("Starting remote browser...");
+
+const customHttpAgent = new http.Agent({});
+(customHttpAgent as any).addRequest = (req: any, options: any) => {
+  // Session ID needs to be set here
+  req.setHeader("x-bb-signing-key", session.signingKey);
+  (http.Agent.prototype as any).addRequest.call(customHttpAgent, req, options);
+};
+
+// Selenium only supports HTTP
+const driver = new Builder()
+  .forBrowser("chrome")
+  .usingHttpAgent(customHttpAgent)
+  .usingServer(session.seleniumRemoteUrl)
+  .build();
+
+await driver.get("https://www.browserbase.com");
+
+const debugUrl = await bb.sessions.debug(session.id);
+console.log(
+  `Session started, live debug accessible here: ${debugUrl.debuggerUrl}.`,
+);
+
+console.log("Taking a screenshot!");
+await driver.takeScreenshot();
+
+console.log("Shutting down...");
+await driver.quit();
+
+console.log(
+  `Session complete! View replay at https://browserbase.com/sessions/${session.id}`,
+);
+
