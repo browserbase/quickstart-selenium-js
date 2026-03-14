@@ -16,8 +16,8 @@
 Browserbase is the best developer platform to reliably run, manage, and monitor headless browsers.
 
 Get browsers' complete control and leverage Browserbase's
-[Infrastructure](https://docs.browserbase.com/under-the-hood), [Stealth Mode](https://docs.browserbase.com/features/stealth-mode), and
-[Session Debugger](https://docs.browserbase.com/features/sessions) to power your automation, test suites,
+[Infrastructure](https://docs.browserbase.com/), [Stealth Mode](https://docs.browserbase.com/features/stealth-mode), and
+[Session Debugger](https://docs.browserbase.com/features/session-recording#session-recording) to power your automation, test suites,
 and LLM data retrievals.
 
 **Get started in under one minute** with Selenium.
@@ -46,6 +46,5 @@ npm start
 
 ## Further reading
 
-- [See how to leverage the Session Debugger for faster development](https://docs.browserbase.com/guides/browser-remote-control#accelerate-your-local-development-with-remote-debugging)
-- [Learn more about Browserbase infrastructure](https://docs.browserbase.com/under-the-hood)
+- [Learn more about Browserbase infrastructure](https://docs.browserbase.com/introduction/what-is-browserbase)
 - [Explore the Sessions API](https://docs.browserbase.com/api-reference/list-all-sessions)
